@@ -1,6 +1,6 @@
 package model;
 
-public class InvalidFieldException extends RuntimeException {
+public class InvalidFieldException extends PIMException {
     public InvalidFieldException(String message) {
         super(message);
     }

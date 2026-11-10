@@ -9,11 +9,14 @@ import java.util.Map;
 public class PIRRepository {
 
     private final Map<Integer, PIR> pirs = new LinkedHashMap<>();
-    private int nextId = 1;
+    private long nextId = 1;
 
     /** The ID the next new PIR should get. */
     public int getNextId() {
-        return nextId;
+        if (nextId > Integer.MAX_VALUE) {
+            throw new PIMException("No record IDs are available in this collection.");
+        }
+        return (int) nextId;
     }
 
     public int add(PIR pir) {
@@ -21,7 +24,7 @@ public class PIRRepository {
             throw new PIMException("ID " + pir.getId() + " is already in use.");
         }
         pirs.put(pir.getId(), pir);
-        nextId = Math.max(nextId, pir.getId() + 1);
+        nextId = Math.max(nextId, (long) pir.getId() + 1);
         return pir.getId();
     }
 

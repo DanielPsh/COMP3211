@@ -26,8 +26,11 @@ public class CommandParser {
 
         List<String> words = new ArrayList<>();
         Map<String, String> fields = new LinkedHashMap<>();
-        if (!name.equals("search")) { // search text is handled by CriterionParser
-            for (String token : split(rest)) {
+        if (name.equals("save") || name.equals("load")) {
+            // A path can contain '=' without being a field assignment.
+            words.addAll(split(rest, true));
+        } else if (!name.equals("search")) { // search text is handled by CriterionParser
+            for (String token : split(rest, false)) {
                 int eq = token.indexOf('=');
                 if (eq < 0) {
                     words.add(token);
@@ -46,7 +49,7 @@ public class CommandParser {
     }
 
     /** Splits on spaces, keeping quoted parts together and removing the quotes. */
-    private static List<String> split(String s) throws InvalidCommandException {
+    private static List<String> split(String s, boolean literalPath) throws InvalidCommandException {
         List<String> out = new ArrayList<>();
         StringBuilder current = new StringBuilder();
         boolean inQuotes = false;
@@ -56,7 +59,8 @@ public class CommandParser {
             if (inQuotes) {
                 if (c == '"') {
                     inQuotes = false;
-                } else if (c == '\\' && i + 1 < s.length()) {
+                } else if (c == '\\' && i + 1 < s.length()
+                        && (!literalPath || s.charAt(i + 1) == '"' || s.charAt(i + 1) == '\\')) {
                     current.append(s.charAt(++i));
                 } else {
                     current.append(c);

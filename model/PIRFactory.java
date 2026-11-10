@@ -1,13 +1,25 @@
 package model;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public final class PIRFactory {
 
-    public static final Set<String> SUPPORTED_TYPES = Set.of("note", "task", "event", "contact");
+    private static final Map<String, List<String>> REQUIRED_FIELDS = Map.of(
+            "note", List.of("text"),
+            "task", List.of("description", "deadline"),
+            "event", List.of("description", "start", "alarm"),
+            "contact", List.of("name", "address", "mobile"));
+
+    public static final Set<String> SUPPORTED_TYPES = REQUIRED_FIELDS.keySet();
 
     private PIRFactory() {
+    }
+
+    /** Required field names in file order, or an empty list for an unknown type. */
+    public static List<String> requiredFields(String type) {
+        return REQUIRED_FIELDS.getOrDefault(type, List.of());
     }
 
     public static PIR create(int id, String type, Map<String, String> fields) throws InvalidFieldException {

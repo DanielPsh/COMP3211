@@ -8,16 +8,10 @@ import model.PIMException;
 import model.PIR;
 import model.PIRFactory;
 import model.PIRRepository;
+import model.PimFileStorage;
 
 /** Runs one command at a time and returns the text to show. Never prints. */
 public class PIMController {
-
-    /** Fields each type must be given on create (field names from CONTRACTS / plan 4.2). */
-    private static final Map<String, List<String>> REQUIRED_FIELDS = Map.of(
-            "note", List.of("text"),
-            "task", List.of("description", "deadline"),
-            "event", List.of("description", "start", "alarm"),
-            "contact", List.of("name", "address", "mobile"));
 
     private final PIRRepository repository;
     private boolean running = true;
@@ -54,8 +48,9 @@ public class PIMController {
             case "delete":
                 return delete(cmd);
             case "save":
+                return save(cmd);
             case "load":
-                return "'" + cmd.name + "' is not available yet.";
+                return load(cmd);
             case "help":
                 return helpText();
             case "exit":
@@ -73,13 +68,11 @@ public class PIMController {
             throw new InvalidCommandException("Usage: create <note|task|event|contact> field=\"value\" ...");
         }
         String type = cmd.words.get(0).toLowerCase();
-        List<String> required = REQUIRED_FIELDS.get(type);
-        if (required != null) { // unknown types are reported by PIRFactory
-            for (String name : required) {
-                if (!cmd.fields.containsKey(name)) {
-                    throw new InvalidCommandException("Missing field '" + name + "'. A " + type
-                            + " needs: " + String.join(", ", required) + ".");
-                }
+        List<String> required = PIRFactory.requiredFields(type);
+        for (String name : required) {
+            if (!cmd.fields.containsKey(name)) {
+                throw new InvalidCommandException("Missing field '" + name + "'. A " + type
+                        + " needs: " + String.join(", ", required) + ".");
             }
         }
         PIR pir = PIRFactory.create(repository.getNextId(), type, cmd.fields);
@@ -140,6 +133,29 @@ public class PIMController {
         return "Deleted record " + id + ".";
     }
 
+    // save PATH.pim   (US10)
+    private String save(Command cmd) {
+        String path = storagePath(cmd);
+        List<PIR> records = repository.get_all();
+        PimFileStorage.save(path, records);
+        return "Saved " + records.size() + " record(s) to " + path + ".";
+    }
+
+    // load PATH.pim   (US11)
+    private String load(Command cmd) {
+        String path = storagePath(cmd);
+        List<PIR> records = PimFileStorage.load(path);
+        repository.replace_all(records);
+        return "Loaded " + records.size() + " record(s) from " + path + ".";
+    }
+
+    private static String storagePath(Command cmd) {
+        if (cmd.words.size() != 1) {
+            throw new InvalidCommandException("Usage: " + cmd.name + " <file.pim>");
+        }
+        return cmd.words.get(0);
+    }
+
     private static int parseId(String text) {
         try {
             return Integer.parseInt(text);
@@ -167,10 +183,11 @@ public class PIMController {
                 "  create event description=\"...\" start=\"yyyy-MM-dd HH:mm:ss\" alarm=\"yyyy-MM-dd HH:mm:ss\"",
                 "  create contact name=\"...\" address=\"...\" mobile=\"...\"",
                 "  modify <id> field=\"value\" ...",
-                "  search <expression>   e.g. search type = task && deadline < \"2026-11-20 00:00\"",
+                "  search <expression>   e.g. search type = task && deadline < \"2026-11-20 00:00:00\"",
                 "  print <id> | print all",
                 "  delete <id>",
                 "  save <file.pim> | load <file.pim>",
+                "    Use double quotes around paths with spaces. Load replaces all current records.",
                 "  help | exit");
     }
 }

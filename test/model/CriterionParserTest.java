@@ -120,6 +120,22 @@ class CriterionParserTest {
         assertTrue(parse("text contains \"say \\\"hi\\\" \\\\ bye\"").matches(quoted));
     }
 
+    // Checks: a string that ends right after a backslash is reported as unterminated.
+    @Test
+    void string_endingWithBackslash_isUnterminated() {
+        InvalidCriterionException e = assertThrows(InvalidCriterionException.class,
+                () -> parse("text contains \"abc\\"));
+        assertTrue(e.getMessage().contains("Unterminated"));
+    }
+
+    // Checks: parsed time criteria print as "field symbol time" for < > =.
+    @Test
+    void parse_timeCriteria_toStringShowsSymbol() throws Exception {
+        assertEquals("deadline < 2026-11-30T00:00", parse("deadline < \"2026-11-30 00:00\"").toString());
+        assertEquals("start > 2026-11-30T00:00", parse("start > \"2026-11-30 00:00\"").toString());
+        assertEquals("alarm = 2026-11-30T00:00:05", parse("alarm = \"2026-11-30 00:00:05\"").toString());
+    }
+
     // Checks: no spaces around operators and brackets is fine.
     @Test
     void whitespace_isFlexible() throws Exception {

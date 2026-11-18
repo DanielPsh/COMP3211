@@ -1,5 +1,6 @@
 package model;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -74,6 +75,26 @@ class CriteriaTest {
         assertTrue(new OrCriterion(isTask, isNote).matches(note));
         assertTrue(new NotCriterion(isNote).matches(task));
         assertFalse(new NotCriterion(isNote).matches(note));
+    }
+
+    // Checks: each time comparison reports its symbol: < for BEFORE, > for AFTER, = for EQUAL.
+    @Test
+    void comparison_getSymbol_matchesOperator() {
+        assertEquals("<", TimeCompareCriterion.Comparison.BEFORE.getSymbol());
+        assertEquals(">", TimeCompareCriterion.Comparison.AFTER.getSymbol());
+        assertEquals("=", TimeCompareCriterion.Comparison.EQUAL.getSymbol());
+    }
+
+    // Checks: the text form of a time criterion shows the field, the symbol and the time.
+    @Test
+    void timeCompare_toString_showsFieldSymbolAndTime() {
+        LocalDateTime t = LocalDateTime.of(2026, 11, 30, 0, 0);
+        assertEquals("deadline < 2026-11-30T00:00",
+                new TimeCompareCriterion("deadline", TimeCompareCriterion.Comparison.BEFORE, t).toString());
+        assertEquals("start > 2026-11-30T00:00",
+                new TimeCompareCriterion("start", TimeCompareCriterion.Comparison.AFTER, t).toString());
+        assertEquals("alarm = 2026-11-30T00:00",
+                new TimeCompareCriterion("alarm", TimeCompareCriterion.Comparison.EQUAL, t).toString());
     }
 
     // Checks: a missing field makes the inner criterion false, so "!" makes it true.

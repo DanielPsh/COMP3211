@@ -1,5 +1,7 @@
 out/
 *.class
+.idea/
 /build/
 *.pdf
 *.pim
+*.iml

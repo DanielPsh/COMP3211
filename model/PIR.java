@@ -3,10 +3,11 @@ package model;
 import java.util.Map;
 import java.util.Set;
 import java.time.format.DateTimeFormatter;
+import java.time.format.ResolverStyle;
 
 public abstract class PIR {
 
-    public static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    public static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss").withResolverStyle(ResolverStyle.STRICT);
 
     int id;
 

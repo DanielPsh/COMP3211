@@ -5,11 +5,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Turns an input line into a {@link Command}.
- * Words are separated by spaces. A value in double quotes may contain spaces;
- * inside quotes, \" and \\ are escapes.
- */
 public class CommandParser {
 
     private CommandParser() {
@@ -27,9 +22,9 @@ public class CommandParser {
         List<String> words = new ArrayList<>();
         Map<String, String> fields = new LinkedHashMap<>();
         if (name.equals("save") || name.equals("load")) {
-            // A path can contain '=' without being a field assignment.
+
             words.addAll(split(rest, true));
-        } else if (!name.equals("search")) { // search text is handled by CriterionParser
+        } else if (!name.equals("search")) {
             for (String token : split(rest, false)) {
                 int eq = token.indexOf('=');
                 if (eq < 0) {
@@ -48,7 +43,6 @@ public class CommandParser {
         return new Command(name, words, fields, rest);
     }
 
-    /** Splits on spaces, keeping quoted parts together and removing the quotes. */
     private static List<String> split(String s, boolean literalPath) throws InvalidCommandException {
         List<String> out = new ArrayList<>();
         StringBuilder current = new StringBuilder();

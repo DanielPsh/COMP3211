@@ -1,6 +1,5 @@
 package model;
 
-/** The wrapped condition must not hold ({@code !}). */
 public class NotCriterion implements Criterion {
     private final Criterion inner;
 

@@ -1,6 +1,5 @@
 package model;
 
-/** At least one condition must hold ({@code ||}). */
 public class OrCriterion implements Criterion {
     private final Criterion left;
     private final Criterion right;

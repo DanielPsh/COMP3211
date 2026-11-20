@@ -1,6 +1,5 @@
 package model;
 
-/** Both conditions must hold ({@code &&}). */
 public class AndCriterion implements Criterion {
     private final Criterion left;
     private final Criterion right;

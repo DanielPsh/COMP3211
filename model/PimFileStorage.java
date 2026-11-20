@@ -16,14 +16,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/** Reads and writes the UTF-8 PIMFILE v1 snapshot format. */
 public final class PimFileStorage {
     private static final String HEADER = "PIMFILE v1";
 
     private PimFileStorage() {
     }
 
-    /** Replaces the destination only after the complete snapshot has been written. */
     public static void save(String path, List<PIR> pirs) throws PimFileException {
         Path target = pimPath(path).toAbsolutePath();
         Path staged = null;
@@ -45,13 +43,12 @@ public final class PimFileStorage {
                 try {
                     Files.deleteIfExists(staged);
                 } catch (IOException ignored) {
-                    // Cleanup failure must not hide the original save error.
+
                 }
             }
         }
     }
 
-    /** Returns a fully validated snapshot in file order, with the original record IDs. */
     public static List<PIR> load(String path) throws PimFileException {
         Path source = pimPath(path);
         List<PIR> pirs = new ArrayList<>();
@@ -139,7 +136,7 @@ public final class PimFileStorage {
         }
         PIR pir = PIRFactory.create(id, type, fields);
         for (Map.Entry<String, String> time : pir.get_time_fields().entrySet()) {
-            // The model parser can normalize dates such as February 30. A snapshot must be exact.
+
             if (!time.getValue().equals(fields.get(time.getKey()))) {
                 throw new PimFileException("Invalid date/time in field '" + time.getKey() + "'.");
             }

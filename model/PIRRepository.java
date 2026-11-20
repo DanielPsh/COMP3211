@@ -5,13 +5,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Keeps all PIRs in memory and hands out IDs. IDs are never reused. */
 public class PIRRepository {
 
     private final Map<Integer, PIR> pirs = new LinkedHashMap<>();
     private long nextId = 1;
 
-    /** The ID the next new PIR should get. */
     public int getNextId() {
         if (nextId > Integer.MAX_VALUE) {
             throw new PIMException("No record IDs are available in this collection.");
@@ -56,7 +54,6 @@ public class PIRRepository {
         return result;
     }
 
-    /** Replaces everything with the given PIRs (used after load). */
     public void replace_all(List<PIR> newPirs) {
         pirs.clear();
         nextId = 1;

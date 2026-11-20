@@ -1,9 +1,5 @@
 package model;
 
-/**
- * Matches PIRs whose text field contains a string (case-sensitive).
- * A PIR that does not have the field never matches.
- */
 public class TextContainsCriterion implements Criterion {
     private final String field;
     private final String substring;

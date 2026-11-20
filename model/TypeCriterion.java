@@ -1,6 +1,5 @@
 package model;
 
-/** Matches PIRs of one type, e.g. {@code type = task}. */
 public class TypeCriterion implements Criterion {
     private final String type;
 

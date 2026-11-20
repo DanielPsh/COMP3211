@@ -2,11 +2,6 @@ package model;
 
 import java.time.LocalDateTime;
 
-/**
- * Compares a time field with a given point in time (before, after or equal).
- * A PIR that does not have the field never matches. PIRs hand out time fields
- * as text in {@link PIR#TIME_FORMAT}, which is parsed here before comparing.
- */
 public class TimeCompareCriterion implements Criterion {
     public enum Comparison {
         BEFORE("<"), AFTER(">"), EQUAL("=");

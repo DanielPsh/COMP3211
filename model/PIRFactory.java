@@ -17,7 +17,6 @@ public final class PIRFactory {
     private PIRFactory() {
     }
 
-    /** Required field names in file order, or an empty list for an unknown type. */
     public static List<String> requiredFields(String type) {
         return REQUIRED_FIELDS.getOrDefault(type, List.of());
     }

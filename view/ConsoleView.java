@@ -3,7 +3,6 @@ package view;
 import controller.PIMController;
 import java.util.Scanner;
 
-/** The only class that reads input and prints output. */
 public class ConsoleView {
 
     private final PIMController controller;

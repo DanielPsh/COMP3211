@@ -10,7 +10,6 @@ import model.PIRFactory;
 import model.PIRRepository;
 import model.PimFileStorage;
 
-/** Runs one command at a time and returns the text to show. Never prints. */
 public class PIMController {
 
     private final PIRRepository repository;
@@ -24,7 +23,6 @@ public class PIMController {
         return running;
     }
 
-    /** Runs one input line. Errors are returned as messages, never thrown. */
     public String execute(String line) {
         try {
             return run(CommandParser.parse(line));
@@ -62,7 +60,6 @@ public class PIMController {
         }
     }
 
-    // create TYPE field="value" ...   (US1-US5)
     private String create(Command cmd) {
         if (cmd.words.size() != 1) {
             throw new InvalidCommandException("Usage: create <note|task|event|contact> field=\"value\" ...");
@@ -80,14 +77,12 @@ public class PIMController {
         return "Created " + pir.getType() + " with ID " + id + ".";
     }
 
-    // modify ID field="value" ...   (US6)
     private String modify(Command cmd) {
         if (cmd.words.size() != 1 || cmd.fields.isEmpty()) {
             throw new InvalidCommandException("Usage: modify <id> field=\"value\" ...");
         }
         PIR pir = repository.get(parseId(cmd.words.get(0)));
-        // Build a throwaway copy with the new values first, so a bad name or value
-        // is reported before anything changes.
+
         Map<String, String> updated = new HashMap<>(pir.to_record());
         updated.remove("id");
         updated.remove("type");
@@ -102,7 +97,6 @@ public class PIMController {
         return "Modified record " + pir.getId() + ".";
     }
 
-    // search EXPRESSION   (US7)
     private String search(Command cmd) {
         List<PIR> found = repository.search(CriterionParser.parse(cmd.rest));
         if (found.isEmpty()) {
@@ -111,7 +105,6 @@ public class PIMController {
         return found.size() + " record(s) found:\n\n" + details(found);
     }
 
-    // print ID | print all   (US8)
     private String print(Command cmd) {
         if (cmd.words.size() != 1 || !cmd.fields.isEmpty()) {
             throw new InvalidCommandException("Usage: print <id> | print all");
@@ -123,7 +116,6 @@ public class PIMController {
         return repository.get(parseId(cmd.words.get(0))).to_detail_string();
     }
 
-    // delete ID   (US9)
     private String delete(Command cmd) {
         if (cmd.words.size() != 1 || !cmd.fields.isEmpty()) {
             throw new InvalidCommandException("Usage: delete <id>");
@@ -133,7 +125,6 @@ public class PIMController {
         return "Deleted record " + id + ".";
     }
 
-    // save PATH.pim   (US10)
     private String save(Command cmd) {
         String path = storagePath(cmd);
         List<PIR> records = repository.get_all();
@@ -141,7 +132,6 @@ public class PIMController {
         return "Saved " + records.size() + " record(s) to " + path + ".";
     }
 
-    // load PATH.pim   (US11)
     private String load(Command cmd) {
         String path = storagePath(cmd);
         List<PIR> records = PimFileStorage.load(path);

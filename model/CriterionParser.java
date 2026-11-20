@@ -8,22 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Turns a search expression into a {@link Criterion}.
- *
- * <pre>
- * expr  := and ( "||" and )*
- * and   := unary ( "&&" unary )*
- * unary := "!" unary | "(" expr ")" | atom
- * atom  := "type" "=" TYPE
- *        | TEXT_FIELD "contains" STRING
- *        | TIME_FIELD ( "&lt;" | "&gt;" | "=" ) DATETIME
- * </pre>
- *
- * "!" binds tightest, then "&&", then "||". Strings and date-times are written
- * in double quotes; inside a string, {@code \"} and {@code \\} are escapes.
- * Date-times use {@code yyyy-MM-dd HH:mm} or {@code yyyy-MM-dd HH:mm:ss}.
- */
 public class CriterionParser {
     private static final DateTimeFormatter WITH_SECONDS =
             DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss").withResolverStyle(ResolverStyle.STRICT);
@@ -56,11 +40,6 @@ public class CriterionParser {
         this.tokens = tokens;
     }
 
-    /**
-     * Parses a search expression.
-     *
-     * @throws InvalidCriterionException if the expression is empty or malformed
-     */
     public static Criterion parse(String expression) throws InvalidCriterionException {
         if (expression == null || expression.trim().isEmpty()) {
             throw new InvalidCriterionException("Search expression is empty.");
@@ -222,7 +201,7 @@ public class CriterionParser {
         try {
             return LocalDateTime.parse(value.text, WITH_SECONDS);
         } catch (DateTimeParseException ignored) {
-            // fall through to the format without seconds
+
         }
         try {
             return LocalDateTime.parse(value.text, WITHOUT_SECONDS);

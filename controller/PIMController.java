@@ -32,6 +32,8 @@ public class PIMController {
             return "Error: " + e.getMessage();
         } catch (RuntimeException e) {
             return "Error: missing or invalid value (" + e.getMessage() + ")";
+        } catch (StackOverflowError e) {
+            return "Error: the command is too long or too complex to run.";
         }
     }
 

@@ -130,6 +130,29 @@ class PimFileStorageTest {
         assertThrows(PimFileException.class, () -> PimFileStorage.load(path.toString()));
     }
 
+    // Checks that a wrong or missing header is reported with the file name, line 1 and the expected header.
+    @ParameterizedTest
+    @ValueSource(strings = {"NOTPIM\n1\tnote\ttext=a\n", "pimfile v1\n", "\n" + HEADER + "\n", ""})
+    void invalidHeaderMessageNamesLineOne(String contents) throws IOException {
+        Path path = directory.resolve("bad-header.pim");
+        Files.writeString(path, contents);
+
+        PimFileException e = assertThrows(PimFileException.class, () -> PimFileStorage.load(path.toString()));
+
+        assertEquals("Invalid .pim header in '" + path + "' at line 1: expected " + HEADER + ".", e.getMessage());
+    }
+
+    // Checks that a bad record after a valid header is still reported with its own line number.
+    @Test
+    void invalidRecordMessageNamesItsLine() throws IOException {
+        Path path = directory.resolve("bad-record.pim");
+        Files.writeString(path, HEADER + "\n1\tnote\ttext=ok\n2\tnote\n");
+
+        PimFileException e = assertThrows(PimFileException.class, () -> PimFileStorage.load(path.toString()));
+
+        assertTrue(e.getMessage().startsWith("Invalid record in '" + path + "' at line 3: "), e.getMessage());
+    }
+
     // Checks that a missing input is reported without creating the file.
     @Test
     void loadMissingFileReportsStorageError() {

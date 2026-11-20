@@ -144,6 +144,70 @@ class CriterionParserTest {
         assertFalse(c.matches(draftTask));
     }
 
+    // Checks: a parsed "contains" ignores letter case, e.g. "MILK" finds "Buy milk".
+    @Test
+    void parse_textContains_ignoresCase() throws Exception {
+        assertTrue(parse("text contains \"MILK\"").matches(new Note(7, "Buy milk")));
+        assertFalse(parse("!(text contains \"MILK\")").matches(new Note(7, "Buy milk")));
+    }
+
+    // Checks: brackets and "!" nested exactly MAX_NESTING deep are still accepted.
+    @Test
+    void nesting_atLimit_isAccepted() throws Exception {
+        int n = CriterionParser.MAX_NESTING;
+        assertTrue(parse("(".repeat(n) + "type = task" + ")".repeat(n)).matches(finalTask));
+        assertTrue(parse("!".repeat(n) + "type = task").matches(finalTask));
+    }
+
+    // Checks: one level beyond the limit is rejected, and the message states the limit.
+    @Test
+    void nesting_overLimit_throwsWithLimitInMessage() {
+        int n = CriterionParser.MAX_NESTING + 1;
+        InvalidCriterionException e = assertThrows(InvalidCriterionException.class,
+                () -> parse("(".repeat(n) + "type = task" + ")".repeat(n)));
+        assertTrue(e.getMessage().contains("more than " + CriterionParser.MAX_NESTING + " levels"));
+        assertTrue(e.getMessage().contains("at position " + CriterionParser.MAX_NESTING));
+        assertThrows(InvalidCriterionException.class, () -> parse("!".repeat(n) + "type = task"));
+    }
+
+    // Checks: extremely deep nesting (5000 and 200000 levels) is reported as an invalid
+    // criterion instead of overflowing the stack.
+    @Test
+    void nesting_extremelyDeep_isRejectedWithoutCrashing() {
+        for (int n : new int[] {5000, 200_000}) {
+            assertThrows(InvalidCriterionException.class,
+                    () -> parse("(".repeat(n) + "type = task" + ")".repeat(n)));
+            assertThrows(InvalidCriterionException.class, () -> parse("!".repeat(n) + "type = task"));
+            assertThrows(InvalidCriterionException.class,
+                    () -> parse("!(".repeat(n) + "type = task" + ")".repeat(n)));
+        }
+    }
+
+    // Checks: brackets that are closed again do not count towards the limit.
+    @Test
+    void nesting_siblingGroups_doNotAccumulate() throws Exception {
+        String expression = "(type = note)" + " || (type = task)".repeat(CriterionParser.MAX_NESTING * 3);
+        assertTrue(parse(expression).matches(finalTask));
+    }
+
+    // Checks: the unknown-field message names the bad field, where it is, and the valid fields.
+    @Test
+    void invalid_unknownField_messageListsValidFields() {
+        InvalidCriterionException e = assertThrows(InvalidCriterionException.class,
+                () -> parse("type = task && color contains \"red\""));
+        assertEquals("Unknown field 'color' (use type, text, description, name, address, mobile, "
+                + "deadline, start or alarm) at position 15.", e.getMessage());
+    }
+
+    // Checks: the invalid date-time message shows the bad value and both accepted formats.
+    @Test
+    void invalid_badDateTime_messageShowsExpectedFormat() {
+        InvalidCriterionException e = assertThrows(InvalidCriterionException.class,
+                () -> parse("deadline < \"soon\""));
+        assertEquals("Invalid date-time \"soon\" (use yyyy-MM-dd HH:mm or yyyy-MM-dd HH:mm:ss)"
+                + " at position 11.", e.getMessage());
+    }
+
     // Checks: empty, blank and null expressions are rejected.
     @Test
     void invalid_emptyOrNull_throws() {

@@ -23,8 +23,12 @@ import java.util.Set;
  * "!" binds tightest, then "&&", then "||". Strings and date-times are written
  * in double quotes; inside a string, {@code \"} and {@code \\} are escapes.
  * Date-times use {@code yyyy-MM-dd HH:mm} or {@code yyyy-MM-dd HH:mm:ss}.
+ * Brackets and "!" may be nested at most {@link #MAX_NESTING} levels deep.
  */
 public class CriterionParser {
+    /** Deepest allowed nesting of brackets and "!". Deeper input is rejected, not parsed. */
+    public static final int MAX_NESTING = 100;
+
     private static final DateTimeFormatter WITH_SECONDS =
             DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss").withResolverStyle(ResolverStyle.STRICT);
     private static final DateTimeFormatter WITHOUT_SECONDS =
@@ -34,6 +38,8 @@ public class CriterionParser {
     private static final Set<String> TEXT_FIELDS =
             Set.of("text", "description", "name", "address", "mobile");
     private static final Set<String> TIME_FIELDS = Set.of("deadline", "start", "alarm");
+    private static final String FIELD_NAMES =
+            "type, text, description, name, address, mobile, deadline, start or alarm";
 
     private enum Kind { LPAREN, RPAREN, AND, OR, NOT, LT, GT, EQ, STRING, WORD, END }
 
@@ -51,6 +57,7 @@ public class CriterionParser {
 
     private final List<Token> tokens;
     private int pos = 0;
+    private int nesting = 0;
 
     private CriterionParser(List<Token> tokens) {
         this.tokens = tokens;
@@ -158,17 +165,24 @@ public class CriterionParser {
 
     private Criterion parseUnary() throws InvalidCriterionException {
         Token t = peek();
+        if (t.kind != Kind.NOT && t.kind != Kind.LPAREN) {
+            return parseAtom();
+        }
+        // Each level is a recursive call, so unlimited nesting would overflow the stack.
+        if (nesting == MAX_NESTING) {
+            throw error("Search expression is nested more than " + MAX_NESTING + " levels deep", t);
+        }
+        next();
+        nesting++;
+        Criterion result;
         if (t.kind == Kind.NOT) {
-            next();
-            return new NotCriterion(parseUnary());
-        }
-        if (t.kind == Kind.LPAREN) {
-            next();
-            Criterion inner = parseOr();
+            result = new NotCriterion(parseUnary());
+        } else {
+            result = parseOr();
             expect(Kind.RPAREN, "')'");
-            return inner;
         }
-        return parseAtom();
+        nesting--;
+        return result;
     }
 
     private Criterion parseAtom() throws InvalidCriterionException {
@@ -215,7 +229,7 @@ public class CriterionParser {
             }
             return new TimeCompareCriterion(name, comparison, parseDateTime(value));
         }
-        throw error("Unknown field '" + name + "'", field);
+        throw error("Unknown field '" + name + "' (use " + FIELD_NAMES + ")", field);
     }
 
     private LocalDateTime parseDateTime(Token value) throws InvalidCriterionException {

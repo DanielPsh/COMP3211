@@ -57,6 +57,44 @@ class PIRTest {
         assertTrue(e.getMessage().contains("task"));
     }
 
+    // Checks: the unknown-field message lists the fields the record type does have,
+    // in the same order the create command uses.
+    @Test
+    void validateFieldName_unknownField_messageListsExpectedFields() {
+        InvalidFieldException task = assertThrows(InvalidFieldException.class,
+                () -> newTask().validateFieldName("dedline"));
+        assertEquals("Unknown field 'dedline' for record type 'task'. Expected fields: description, deadline.",
+                task.getMessage());
+
+        InvalidFieldException event = assertThrows(InvalidFieldException.class,
+                () -> new Event(8, "Meeting", DEADLINE, DEADLINE).validateFieldName("deadline"));
+        assertEquals("Unknown field 'deadline' for record type 'event'. Expected fields: description, start, alarm.",
+                event.getMessage());
+    }
+
+    // Checks: an invalid date/time is rejected with a message that repeats the bad value
+    // and shows the expected format, both when creating and when modifying a record.
+    @Test
+    void invalidDateTime_messageShowsValueAndExpectedFormat() {
+        String expected = "Invalid date/time 'tomorrow'. Expected format: yyyy-MM-dd HH:mm:ss,"
+                + " e.g. 2026-11-20 20:00:00.";
+
+        InvalidFieldException onCreate = assertThrows(InvalidFieldException.class,
+                () -> new Task(7, "Submit SE project", "tomorrow"));
+        InvalidFieldException onModify = assertThrows(InvalidFieldException.class,
+                () -> newTask().set_field("deadline", "tomorrow"));
+
+        assertEquals(expected, onCreate.getMessage());
+        assertEquals(expected, onModify.getMessage());
+        assertTrue(expected.contains(PIR.TIME_FORMAT_TEXT));
+    }
+
+    // Checks: the example in the invalid date/time message is itself a valid date/time.
+    @Test
+    void invalidDateTime_messageExample_isAccepted() {
+        assertDoesNotThrow(() -> newTask().set_field("deadline", "2026-11-20 20:00:00"));
+    }
+
     // Checks: set_field() with a valid field name stores the new value.
     @Test
     void setField_validName_updatesValue() {

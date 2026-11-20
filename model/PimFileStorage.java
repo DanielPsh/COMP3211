@@ -58,7 +58,8 @@ public final class PimFileStorage {
         Set<Integer> ids = new HashSet<>();
         try (BufferedReader in = Files.newBufferedReader(source, StandardCharsets.UTF_8)) {
             if (!HEADER.equals(in.readLine())) {
-                throw new PimFileException("Invalid .pim header in '" + path + "'. Expected " + HEADER + ".");
+                throw new PimFileException("Invalid .pim header in '" + path + "' at line 1: expected "
+                        + HEADER + ".");
             }
             int lineNumber = 1;
             String line;

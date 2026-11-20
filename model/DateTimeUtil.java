@@ -14,7 +14,8 @@ public class DateTimeUtil {
         try {
             return LocalDateTime.parse(dateTimeStr, formatter);
         } catch (DateTimeParseException e) {
-            throw new InvalidFieldException("Invalid date/time format: " + dateTimeStr);
+            throw new InvalidFieldException("Invalid date/time '" + dateTimeStr + "'. Expected format: "
+                    + PIR.TIME_FORMAT_TEXT + ", e.g. 2026-11-20 20:00:00.");
         }
     }
 }

@@ -9,6 +9,9 @@ public abstract class PIR {
 
     public static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss").withResolverStyle(ResolverStyle.STRICT);
 
+    /** How TIME_FORMAT is described to the user in messages. */
+    public static final String TIME_FORMAT_TEXT = "yyyy-MM-dd HH:mm:ss";
+
     int id;
 
     abstract Set<String> getTextFields();
@@ -30,8 +33,9 @@ public abstract class PIR {
         Set<String> timeFields = getTimeFields();
 
         if (!textFields.contains(fieldName) && !timeFields.contains(fieldName)) {
-            throw new InvalidFieldException(
-                    "Field '" + fieldName + "' does not belong to record type '" + getType() + "'");
+            throw new InvalidFieldException("Unknown field '" + fieldName + "' for record type '"
+                    + getType() + "'. Expected fields: "
+                    + String.join(", ", PIRFactory.requiredFields(getType())) + ".");
         }
     }
 

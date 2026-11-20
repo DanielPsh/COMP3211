@@ -27,11 +27,21 @@ class CriteriaTest {
         assertFalse(c.matches(note));
     }
 
-    // Checks: "milk" is inside "Buy milk", but "Milk" (different case) is not.
+    // Checks: "milk" is inside "Buy milk" whatever the letter case of either side,
+    // and a string that is not there still does not match.
     @Test
-    void textContains_matchesSubstring_caseSensitive() {
+    void textContains_matchesSubstring_ignoringCase() {
         assertTrue(new TextContainsCriterion("text", "milk").matches(note));
-        assertFalse(new TextContainsCriterion("text", "Milk").matches(note));
+        assertTrue(new TextContainsCriterion("text", "MILK").matches(note));
+        assertTrue(new TextContainsCriterion("text", "bUY mILK").matches(note));
+        assertTrue(new TextContainsCriterion("text", "ssignment").matches(new Note(3, "ASSIGNMENT 2")));
+        assertFalse(new TextContainsCriterion("text", "bread").matches(note));
+    }
+
+    // Checks: toString() keeps the search string exactly as the user typed it.
+    @Test
+    void textContains_toString_keepsOriginalCase() {
+        assertEquals("text contains \"MILK\"", new TextContainsCriterion("text", "MILK").toString());
     }
 
     // Checks: a note has no "description" field, so the criterion cannot match.

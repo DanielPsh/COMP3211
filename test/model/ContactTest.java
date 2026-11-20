@@ -6,24 +6,17 @@ import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
-/**
- * Unit tests for Contact (US5: contacts with a name, an address and a mobile
- * number).
- * All three are text fields (plan 4.2).
- */
 class ContactTest {
 
     private Contact newContact() {
         return new Contact(2, "Chan Tai Man", "Hung Hom", "91234567");
     }
 
-    // Checks: a contact reports its type as "contact".
     @Test
     void getType_isContact() {
         assertEquals("contact", newContact().getType());
     }
-
-    // Checks: the constructor stores the ID, name, address and mobile.
+    
     @Test
     void constructor_storesAllFields() {
         Contact contact = newContact();
@@ -33,14 +26,11 @@ class ContactTest {
                 contact.get_text_fields());
     }
 
-    // Checks: a contact has no time fields.
     @Test
     void getTimeFields_isEmpty() {
         assertTrue(newContact().get_time_fields().isEmpty());
     }
 
-    // Checks: the declared field names are "name", "address", "mobile" (plan 4.2),
-    // no time fields.
     @Test
     void fieldNames_matchSpecification() {
         Contact contact = newContact();
